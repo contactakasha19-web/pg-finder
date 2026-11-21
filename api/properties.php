@@ -5,6 +5,16 @@ $city   = trim($_GET['city'] ?? '');
 $max    = (int)($_GET['max_price'] ?? 0);
 $gender = $_GET['gender'] ?? '';
 
+if (DEMO_MODE) {
+    $rows = demo_properties();
+    $rows = array_values(array_filter($rows, function ($p) use ($city, $max, $gender) {
+        return ($city === '' || $p['city'] === $city)
+            && ($max <= 0 || $p['price'] <= $max)
+            && ($gender === '' || $p['gender'] === $gender);
+    }));
+    json_out(['properties' => $rows, 'logged_in' => false, 'demo' => true]);
+}
+
 $sql = 'SELECT p.id, p.name, p.city, p.area, p.price, p.gender, p.rating, p.image,
                (i.user_id IS NOT NULL) AS interested
         FROM properties p

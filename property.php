@@ -1,21 +1,36 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 $id = (int)($_GET['id'] ?? 0);
-$stmt = db()->prepare('SELECT * FROM properties WHERE id = ?');
-$stmt->execute([$id]);
-$p = $stmt->fetch();
+if (DEMO_MODE) {
+    $p = null;
+    foreach (demo_properties() as $property) {
+        if ((int)$property['id'] === $id) { $p = $property; break; }
+    }
+} else {
+    $stmt = db()->prepare('SELECT * FROM properties WHERE id = ?');
+    $stmt->execute([$id]);
+    $p = $stmt->fetch();
+}
 if (!$p) { http_response_code(404); $pageTitle = 'Not found'; require __DIR__ . '/includes/header.php';
   echo '<div class="alert alert-warning">That property does not exist. <a href="index.php">Back to listings</a></div>';
   require __DIR__ . '/includes/footer.php'; exit; }
 
-$imgs = db()->prepare('SELECT image FROM property_images WHERE property_id = ? ORDER BY id');
-$imgs->execute([$id]);
-$images = $imgs->fetchAll(PDO::FETCH_COLUMN);
-array_unshift($images, $p['image']);
+if (DEMO_MODE) {
+  $images = [$p['image'], 'https://picsum.photos/seed/pg' . $id . 'g1/800/600', 'https://picsum.photos/seed/pg' . $id . 'g2/800/600'];
+  $amenities = ['WiFi','Power backup','CCTV security'];
+  if ($id % 2 === 0) $amenities[] = 'Meals included';
+  if ($id % 3 !== 0) $amenities[] = 'Air conditioning';
+  if ($id % 2 === 1) $amenities[] = 'Laundry';
+} else {
+  $imgs = db()->prepare('SELECT image FROM property_images WHERE property_id = ? ORDER BY id');
+  $imgs->execute([$id]);
+  $images = $imgs->fetchAll(PDO::FETCH_COLUMN);
+  array_unshift($images, $p['image']);
 
-$am = db()->prepare('SELECT a.name FROM amenities a JOIN property_amenities pa ON pa.amenity_id = a.id WHERE pa.property_id = ? ORDER BY a.name');
-$am->execute([$id]);
-$amenities = $am->fetchAll(PDO::FETCH_COLUMN);
+  $am = db()->prepare('SELECT a.name FROM amenities a JOIN property_amenities pa ON pa.amenity_id = a.id WHERE pa.property_id = ? ORDER BY a.name');
+  $am->execute([$id]);
+  $amenities = $am->fetchAll(PDO::FETCH_COLUMN);
+}
 
 $interested = false;
 if (is_logged_in()) {

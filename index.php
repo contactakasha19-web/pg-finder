@@ -1,7 +1,14 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
-$cities = db()->query('SELECT DISTINCT city FROM properties ORDER BY city')->fetchAll(PDO::FETCH_COLUMN);
-$maxPrice = (int)db()->query('SELECT MAX(price) FROM properties')->fetchColumn();
+if (DEMO_MODE) {
+  $properties = demo_properties();
+  $cities = array_values(array_unique(array_column($properties, 'city')));
+  sort($cities);
+  $maxPrice = max(array_column($properties, 'price'));
+} else {
+  $cities = db()->query('SELECT DISTINCT city FROM properties ORDER BY city')->fetchAll(PDO::FETCH_COLUMN);
+  $maxPrice = (int)db()->query('SELECT MAX(price) FROM properties')->fetchColumn();
+}
 $pageTitle = 'Find a PG';
 require __DIR__ . '/includes/header.php';
 ?>
