@@ -4,6 +4,12 @@ if (is_logged_in()) { header('Location: index.php'); exit; }
 
 $errors = []; $old = ['name' => '', 'email' => '', 'phone' => ''];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (DEMO_MODE) {
+        $errors[] = 'Account creation requires an external MySQL database. This hosted demo is browse-only.';
+        $old['name'] = trim($_POST['name'] ?? '');
+        $old['email'] = trim($_POST['email'] ?? '');
+        $old['phone'] = trim($_POST['phone'] ?? '');
+    } else {
     if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) { $errors[] = 'Session expired. Please try again.'; }
     $old['name']  = trim($_POST['name'] ?? '');
     $old['email'] = trim($_POST['email'] ?? '');
@@ -28,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $old['name'];
             header('Location: index.php'); exit;
         }
+    }
     }
 }
 $pageTitle = 'Sign up';

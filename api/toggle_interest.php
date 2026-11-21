@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/init.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_out(['error' => 'POST only'], 405);
+if (DEMO_MODE) json_out(['error' => 'Shortlisting requires an external MySQL database.'], 503);
 if (!is_logged_in()) json_out(['error' => 'Please log in to shortlist a PG.'], 401);
 require_csrf();
 

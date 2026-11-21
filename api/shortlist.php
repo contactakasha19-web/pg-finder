@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/init.php';
+if (DEMO_MODE) json_out(['properties' => [], 'demo' => true]);
 if (!is_logged_in()) json_out(['error' => 'Please log in.'], 401);
 
 $stmt = db()->prepare('SELECT p.id, p.name, p.city, p.area, p.price, p.gender, p.rating, p.image

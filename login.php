@@ -7,6 +7,10 @@ if (is_logged_in()) { header('Location: ' . $next); exit; }
 
 $error = ''; $email = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (DEMO_MODE) {
+        $error = 'Accounts require an external MySQL database. This hosted demo is browse-only.';
+        $email = trim($_POST['email'] ?? '');
+    } else {
     $email = trim($_POST['email'] ?? '');
     $pass  = $_POST['password'] ?? '';
     if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
@@ -23,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . $next); exit;
         }
         $error = 'Email or password is incorrect.';
+    }
     }
 }
 $pageTitle = 'Log in';
